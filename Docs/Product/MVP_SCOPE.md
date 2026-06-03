@@ -30,3 +30,4 @@ Deliver a practical civic safety workflow where citizens can report hazards, rec
 * Future tasks can be assigned by module and role.
 * Each sensitive workflow has a documented privacy expectation.
 * Backend, database, mobile, QA, security, and documentation work can proceed independently from clear starter documents.
+* Product user stories provide acceptance criteria, dependencies, and privacy guardrails for future implementation tasks.
