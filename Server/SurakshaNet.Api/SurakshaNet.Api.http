@@ -1,0 +1,9 @@
+@SurakshaNet.Api_HostAddress = http://localhost:5184
+
+GET {{SurakshaNet.Api_HostAddress}}/api/health
+Accept: application/json
+
+###
+
+GET {{SurakshaNet.Api_HostAddress}}/api/modules
+Accept: application/json
