@@ -31,26 +31,33 @@ class HomeScreen extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text('Report hazards, watch verified alerts, and protect sensitive details by default.'),
+            const Text(
+              'Report hazards, watch verified alerts, and protect sensitive details by default.',
+            ),
             const SizedBox(height: 20),
             const PrivacyNoticeCard(
-              message: 'AI verification is decision support only. Human review is required for sensitive publishing.',
+              message: 'AI verification is decision support only. Human review is '
+                  'required for sensitive publishing.',
             ),
             const SizedBox(height: 20),
             _HomeAction(
               icon: Icons.add_location_alt_rounded,
               title: 'Report incident',
               subtitle: 'Flood, electric, pothole, road, unsafe-area, or other hazard.',
+              onTap: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.reportIncident),
             ),
             _HomeAction(
               icon: Icons.notifications_active_rounded,
               title: 'Nearby alerts',
               subtitle: 'Geo-fenced alert foundation with approximate area copy.',
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.nearbyAlerts),
             ),
             _HomeAction(
               icon: Icons.fact_check_rounded,
               title: 'My reports',
               subtitle: 'Track verification status and audit-safe updates.',
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.myReports),
             ),
           ],
         ),
@@ -64,16 +71,19 @@ class _HomeAction extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
+        onTap: onTap,
         leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
