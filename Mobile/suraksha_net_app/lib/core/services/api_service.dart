@@ -1,15 +1,17 @@
-class ApiService {
-  const ApiService({this.mockMode = true});
+import '../config/app_config.dart';
 
-  final bool mockMode;
+class ApiService {
+  const ApiService({this.config = AppConfig.localMock});
+
+  final AppConfig config;
 
   Future<String> healthCheck() async {
-    if (mockMode) {
+    if (config.mockMode) {
       return 'mock-api-ready';
     }
 
     throw UnimplementedError(
-      'Backend API integration will be added in a later scoped task.',
+      'Backend API integration for ${config.apiBaseUrl} will be added in a later scoped task.',
     );
   }
 }
