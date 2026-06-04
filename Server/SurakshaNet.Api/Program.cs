@@ -1,15 +1,39 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SurakshaNet.Api.Authentication;
 using SurakshaNet.Api.Data;
+using SurakshaNet.Api.DTOs;
 using SurakshaNet.Api.Repositories;
 using SurakshaNet.Api.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(entry => entry.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors
+                        .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                            ? "The submitted value is invalid."
+                            : error.ErrorMessage)
+                        .ToArray());
+
+            return new BadRequestObjectResult(new ValidationErrorResponse(
+                "validation_failed",
+                "One or more request fields are invalid.",
+                errors));
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -69,6 +93,11 @@ if (!string.IsNullOrWhiteSpace(jwtSecret))
             };
         });
 }
+else
+{
+    builder.Services.AddAuthentication("Disabled")
+        .AddScheme<AuthenticationSchemeOptions, DisabledAuthenticationHandler>("Disabled", options => { });
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
@@ -86,11 +115,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-if (!string.IsNullOrWhiteSpace(jwtSecret))
-{
-    app.UseAuthentication();
-}
-
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health/live");

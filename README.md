@@ -18,7 +18,7 @@ SurakshaNet AI is a verification-first civic safety and public accountability pl
 ```text
 Mobile/                    Flutter mobile app placeholder
 Web/                       Optional admin/web app placeholder
-Server/                    .NET 8 Web API placeholder
+Server/                    .NET 8 Web API foundation
 DB/                        SQL Server scripts and seed data
 Backup/                    Backup and restore strategy
 Docs/Product/              MVP scope, backlog, and product planning
@@ -84,10 +84,10 @@ Recommended workflow:
 
 ## How to Run the Future App
 
-No runnable Flutter, web, backend, or database implementation is included in this setup task. Future tasks should add module-specific setup commands in the relevant README files:
+The backend API foundation is available under `Server/SurakshaNet.Api/`. See module-specific setup commands in the relevant README files:
 
 * `Mobile/README.md` for Flutter commands.
-* `Server/README.md` for .NET API commands.
+* `Server/README.md` for .NET API commands, configuration, and foundation endpoints.
 * `DB/README.md` for SQL Server scripts and seed data.
 * `Tests/README.md` for test execution.
 
