@@ -1,6 +1,6 @@
 # Database Modules
 
-## MVP Database Planning
+## MVP Database Baseline
 
 SQL Server persistence should support privacy-first reporting, explainable verification, geo-fenced protection, public accountability, helper consent, and auditability. Schema scripts belong under `DB/Scripts/` and safe seed data belongs under `DB/SeedData/` in future database tasks.
 
