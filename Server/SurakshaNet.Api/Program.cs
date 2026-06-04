@@ -70,8 +70,10 @@ builder.Services.AddDbContext<SurakshaNetDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SurakshaNetDb")));
 
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<IGeoFenceAlertService, GeoFenceAlertService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IModuleStatusService, ModuleStatusService>();
 

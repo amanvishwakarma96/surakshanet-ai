@@ -15,6 +15,7 @@ The initial backend project lives in `Server/SurakshaNet.Api/` and includes:
 - Stable validation error responses for API clients
 - Safe disabled-auth fallback that returns `401` for protected endpoints until a JWT secret is configured
 - Initial module status endpoint at `GET /api/modules`
+- Geo-fenced alert lookup at `GET /api/geofences/alerts/nearby`, accepting optional approximate latitude/longitude query parameters and returning published active alerts without reporter identity or exact incident coordinates
 - Foundation models for Auth/Users, Incidents, GeoFences, PublicBoard, Solutions, HelperRequests, and AuditLogs
 
 ## Configuration

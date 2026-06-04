@@ -115,8 +115,9 @@ void main() {
       await tester.tap(find.text('Nearby alerts'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Geo-fenced alerts foundation'), findsOneWidget);
-      expect(find.text('No live alerts in mock mode'), findsOneWidget);
+      expect(find.text('Geo-fenced safety alerts'), findsOneWidget);
+      expect(find.text('Use approximate area for matching'), findsOneWidget);
+      expect(find.text('Flood caution near Ward 1 bus stop'), findsOneWidget);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -128,4 +129,30 @@ void main() {
       expect(find.textContaining('Flood / waterlogging'), findsOneWidget);
     },
   );
+  testWidgets(
+    'nearby alerts can simulate approximate geo-fence matching',
+    (tester) async {
+      await tester.pumpWidget(const SurakshaNetApp());
+
+      await tester.tap(find.text('Get started'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Enter mock app'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nearby alerts'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Approx. 320m from your shared area'), findsNothing);
+
+      await tester.tap(find.byType(SwitchListTile).first);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Mock matching is using an approximate area, not exact GPS.'),
+        findsOneWidget,
+      );
+      expect(find.text('Approx. 320m from your shared area'), findsOneWidget);
+      expect(find.text('Published after human verification'), findsWidgets);
+    },
+  );
+
 }

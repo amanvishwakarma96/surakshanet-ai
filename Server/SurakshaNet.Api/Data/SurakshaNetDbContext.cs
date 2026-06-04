@@ -11,6 +11,8 @@ public sealed class SurakshaNetDbContext(DbContextOptions<SurakshaNetDbContext> 
 
     public DbSet<GeoFence> GeoFences => Set<GeoFence>();
 
+    public DbSet<Alert> Alerts => Set<Alert>();
+
     public DbSet<PublicBoardRecord> PublicBoardRecords => Set<PublicBoardRecord>();
 
     public DbSet<SolutionSuggestion> SolutionSuggestions => Set<SolutionSuggestion>();
@@ -47,6 +49,26 @@ public sealed class SurakshaNetDbContext(DbContextOptions<SurakshaNetDbContext> 
             entity.Property(geoFence => geoFence.HazardType).HasMaxLength(80).IsRequired();
             entity.Property(geoFence => geoFence.CenterLatitude).HasPrecision(9, 6);
             entity.Property(geoFence => geoFence.CenterLongitude).HasPrecision(9, 6);
+            entity.HasMany<Alert>()
+                .WithOne(alert => alert.GeoFence)
+                .HasForeignKey(alert => alert.GeoFenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Alert>(entity =>
+        {
+            entity.Property(alert => alert.Title).HasMaxLength(160).IsRequired();
+            entity.Property(alert => alert.Message).HasMaxLength(1000).IsRequired();
+            entity.Property(alert => alert.Severity).HasMaxLength(32).IsRequired();
+            entity.Property(alert => alert.Status).HasMaxLength(32).IsRequired();
+            entity.HasOne(alert => alert.Incident)
+                .WithMany()
+                .HasForeignKey(alert => alert.IncidentId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(alert => alert.PublishedBy)
+                .WithMany()
+                .HasForeignKey(alert => alert.PublishedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<PublicBoardRecord>(entity =>
