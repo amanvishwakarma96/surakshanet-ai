@@ -12,6 +12,8 @@ The initial backend project lives in `Server/SurakshaNet.Api/` and includes:
 - DTO, service, repository, controller, data, and model folders
 - Basic health endpoint at `GET /api/health`
 - ASP.NET Core health check endpoint at `GET /health/live`
+- Stable validation error responses for API clients
+- Safe disabled-auth fallback that returns `401` for protected endpoints until a JWT secret is configured
 - Initial module status endpoint at `GET /api/modules`
 - Foundation models for Auth/Users, Incidents, GeoFences, PublicBoard, Solutions, HelperRequests, and AuditLogs
 
@@ -19,7 +21,7 @@ The initial backend project lives in `Server/SurakshaNet.Api/` and includes:
 
 Use `appsettings.Example.json` as the template for environment-specific configuration. Do not commit real SQL Server credentials, JWT secrets, or other sensitive values.
 
-For local development, set `Jwt:Secret` through user secrets or environment variables if authentication token validation is needed. Without a configured JWT secret, authentication middleware is intentionally not enabled so public foundation endpoints and Swagger can run during early MVP setup.
+For local development, set `Jwt:Secret` through user secrets or environment variables if authentication token validation is needed. Without a configured JWT secret, the API registers a disabled authentication handler so public foundation endpoints and Swagger can run while protected endpoints return a stable `401` response instead of accepting requests.
 
 ## Run Locally
 

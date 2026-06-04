@@ -9,7 +9,7 @@ namespace SurakshaNet.Api.Controllers;
 [Route("api/[controller]")]
 public sealed class AuditLogsController(IAuditLogService auditLogService) : ControllerBase
 {
-    [Authorize(Roles = "Admin,Moderator")]
+    [Authorize(Roles = "Admin,Reviewer")]
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AuditLogResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<AuditLogResponse>>> GetRecent(CancellationToken cancellationToken)

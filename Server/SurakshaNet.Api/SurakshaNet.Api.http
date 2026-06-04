@@ -7,3 +7,23 @@ Accept: application/json
 
 GET {{SurakshaNet.Api_HostAddress}}/api/modules
 Accept: application/json
+
+###
+
+POST {{SurakshaNet.Api_HostAddress}}/api/incidents
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Pothole near market road",
+  "description": "Large pothole creating risk for two-wheelers near the bus stop.",
+  "category": "RoadHazard",
+  "approximateLatitude": 28.613900,
+  "approximateLongitude": 77.209000,
+  "exactLocationConsent": false
+}
+
+###
+
+GET {{SurakshaNet.Api_HostAddress}}/api/auditlogs
+Accept: application/json
