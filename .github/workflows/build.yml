@@ -1,0 +1,39 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build .NET Server
+        run: |
+          cd Server/SurakshaNet.Api
+          dotnet restore
+          dotnet build --configuration Release
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+
+      - name: Build and Test Flutter
+        run: |
+          cd Mobile/suraksha_net_app
+          flutter pub get
+          flutter analyze
+          flutter test
