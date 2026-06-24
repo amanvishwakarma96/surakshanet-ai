@@ -32,6 +32,7 @@ From `Mobile/suraksha_net_app/`:
 
 ```bash
 flutter pub get
+flutter analyze
 flutter run
 ```
 
