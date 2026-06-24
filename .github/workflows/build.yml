@@ -9,31 +9,55 @@ on:
       - main
 
 jobs:
-  build:
+  build-server:
+    name: Build .NET Server
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v3
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Build .NET Server
-        run: |
-          cd Server/SurakshaNet.Api
-          dotnet restore
-          dotnet build --configuration Release
+      - name: Restore .NET dependencies
+        working-directory: Server/SurakshaNet.Api
+        run: dotnet restore
 
-      - name: Set up Flutter
+      - name: Build .NET Server
+        working-directory: Server/SurakshaNet.Api
+        run: dotnet build --configuration Release --no-restore
+
+  test-flutter:
+    name: Analyze and Test Flutter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up latest Flutter stable
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          channel: stable
+          cache: true
 
-      - name: Build and Test Flutter
-        run: |
-          cd Mobile/suraksha_net_app
-          flutter pub get
-          flutter analyze
-          flutter test
+      - name: Display Flutter version
+        run: flutter --version
+
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics
+
+      - name: Install Flutter dependencies
+        working-directory: Mobile/suraksha_net_app
+        run: flutter pub get
+
+      - name: Analyze Flutter project
+        working-directory: Mobile/suraksha_net_app
+        run: flutter analyze
+
+      - name: Run Flutter tests
+        working-directory: Mobile/suraksha_net_app
+        run: flutter test
