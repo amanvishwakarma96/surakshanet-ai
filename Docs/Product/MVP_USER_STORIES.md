@@ -2,385 +2,307 @@
 
 ## Purpose
 
-This document expands the MVP backlog into Product Manager-ready user stories for planning, estimation, QA coverage, and agent handoff. It does not define implementation details or authorize broad development work beyond the story scope.
+This document links product intent to the implementation-aware backlog in `MVP_BACKLOG.md`. It is the source for planning, issue creation, estimation, and QA traceability. It does not authorize broad implementation outside the named story and its dependencies.
 
-## Story Priority Definitions
+## Priority Definitions
 
-* **P0:** Required for a safe, useful MVP pilot release.
-* **P1:** Important for launch quality, but can be staged after the core reporting, verification, and alert loop.
-* **P2:** Future planning item that should be documented now but not implemented in the MVP build.
+* **P0:** Required before a safe pilot with real users or real incident data.
+* **P1:** Required to complete the intended MVP experience after the secure reporting loop.
+* **P2:** Deferred planning only; not authorized for current MVP implementation.
 
 ## Personas
 
-* **Citizen reporter:** A person submitting a civic safety or public hazard report.
-* **Nearby citizen:** A person who may receive safety alerts or view public board records.
-* **Reviewer/operator:** A trusted human reviewer who verifies, rejects, publishes, or resolves reports.
-* **Administrator:** A privileged user responsible for oversight, moderation, audit review, and configuration.
-* **Helper requester:** A person asking for limited community assistance while protecting exact location by default.
+* **Citizen:** Submits incidents and views their own private reports.
+* **Nearby citizen:** Receives privacy-safe alerts and views approved public information.
+* **Reviewer:** Reviews evidence, verification recommendations, alerts, and publication decisions.
+* **Administrator:** Manages roles, reference configuration, audit review, and moderation oversight.
+* **Helper requester:** Requests limited assistance while protecting identity and exact location.
+* **Verified helper:** Receives only the minimum information allowed by request state and consent scope.
 
 ## P0 Stories
 
-### US-01: One-Tap Incident Reporting
+### US-00 — Reproducible build and contract baseline
 
-**Backlog link:** BL-01
-
-**Feature name:** One-tap incident reporting
-
-**User story:** As a citizen reporter, I want to submit a civic safety incident quickly so nearby people and reviewers can understand the risk without exposing my private identity.
+**Backlog link:** BL-00  
+**User story:** As an engineering team, we need reproducible builds and aligned contracts so every agent works from the same verified foundation.
 
 **Acceptance criteria:**
 
-* A reporter can choose one MVP incident type: flood, electric hazard, pothole/road hazard, unsafe area, or general civic safety.
-* A reporter can add a short description, optional media, and location metadata.
-* The public-facing record uses approximate location by default.
-* The submission is created with a `submitted` verification status.
-* The submission records a creation audit event.
+* Flutter analyze/tests and .NET restore/build/tests run through documented commands.
+* SQL schema, EF models, DTOs, statuses, and seed data have a documented parity result.
+* Configuration examples contain no usable production secrets.
+* Build or contract failures are documented as blockers rather than bypassed.
 
-**Priority:** P0
+**QA focus:** Build reproducibility, configuration safety, contract mismatch detection.
 
-**Dependencies:** Mobile intake flow, backend incident endpoint, database incident record, audit log requirements.
+### US-01 — Secure registration, login, and role enforcement
 
-**Privacy and safety notes:** Do not expose reporter identity or exact location in public views. Exact location should be stored only for authorized workflows and future consent-based use.
-
-**QA focus:** Required field validation, optional media handling, approximate-location display, audit creation, and submission failure states.
-
-### US-02: MVP Incident Categories
-
-**Backlog link:** BL-02
-
-**Feature name:** Incident category taxonomy
-
-**User story:** As a reviewer/operator, I want reports grouped into consistent MVP categories so that verification, routing, alerting, and solution guidance can be applied reliably.
+**Backlog link:** BL-01  
+**User story:** As a user, I want secure authentication so private reports and privileged actions are protected.
 
 **Acceptance criteria:**
 
-* MVP incident categories include flood, electric hazard, pothole/road hazard, unsafe area, and general civic safety.
-* Each submitted incident has exactly one primary category.
-* Category labels are understandable to citizens and reviewers.
-* Category values can be used consistently by backend, database, AI scoring, QA, and mobile flows.
-* Category naming avoids assigning legal blame or implying that unverified allegations are facts.
+* Registration and login validate inputs and never expose password hashes.
+* Tokens are signed, expire, and validate issuer and audience.
+* Server authorization distinguishes Citizen, Reviewer, and Admin.
+* Missing authentication returns `401`; insufficient role returns `403`.
+* Privileged identity and role changes are audited.
 
-**Priority:** P0
+**Privacy and safety:** Authentication errors must not leak private account details. Rate limiting and abuse controls are required before public exposure.
 
-**Dependencies:** Product scope, incident model, mobile reporting form, backend validation, database reference data or enum.
+**QA focus:** Valid/invalid login, token expiry, role denial, duplicate account, audit creation.
 
-**Privacy and safety notes:** Category labels should describe observable hazards, not private individuals or accusations.
+### US-02 — Privacy-safe incident submission
 
-**QA focus:** Category validation, unsupported category rejection, display consistency, and downstream routing compatibility.
-
-### US-03: Incident Verification Status Workflow
-
-**Backlog link:** BL-03
-
-**Feature name:** Incident verification status
-
-**User story:** As a reviewer/operator, I want each report to move through clear review states so public information is trusted and sensitive reports are not published automatically.
+**Backlog link:** BL-02  
+**User story:** As a citizen, I want to report a hazard quickly without unnecessarily exposing my identity or exact location.
 
 **Acceptance criteria:**
 
-* Incidents support the MVP states: `submitted`, `needs_review`, `verified`, `rejected`, `published`, and `resolved`.
-* Status changes require reviewer notes or a system-generated reason.
-* Status changes create audit log entries with actor, timestamp, previous state, and new state.
-* AI scoring can recommend a status but cannot final-approve legal, corruption, petition, helper safety, or sensitive public publishing workflows.
-* Rejected or resolved records remain available for authorized audit review.
+* Supported categories, description limits, location values, and consent fields are validated server-side.
+* Submission begins in the documented initial workflow state.
+* Clients cannot set verification, publication, reviewer, scoring, or audit-actor fields.
+* Incident creation is linked to the authenticated citizen and creates an audit event.
+* Public-safe responses omit reporter identity, contact details, exact coordinates, raw evidence locations, and private notes.
 
-**Priority:** P0
+**Privacy and safety:** Approximate location is the default. Exact location requires an approved purpose and explicit consent.
 
-**Dependencies:** Backend incident workflow, database status fields, audit logging, AI scoring rules.
+**QA focus:** Required fields, unsupported category, invalid coordinates, unauthorized submission, redaction, audit event.
 
-**Privacy and safety notes:** Treat AI as decision support only. Do not silently delete public accountability records.
+### US-03 — Private report history and incident details
 
-**QA focus:** Valid state transitions, invalid transition blocking, reviewer note requirements, audit entries, and human-review enforcement for sensitive cases.
-
-### US-04: AI-Assisted Verification Scoring
-
-**Backlog link:** BL-04
-
-**Feature name:** AI-assisted verification scoring
-
-**User story:** As a reviewer/operator, I want rule-based AI assistance so I can prioritize reports and apply consistent safety guidance without giving automated systems final authority.
+**Backlog link:** BL-03  
+**User story:** As a citizen, I want to track my own reports and open details without seeing another reporter's private information.
 
 **Acceptance criteria:**
 
-* The MVP scoring service can suggest severity, confidence, department category, alert radius, sensitive flag, and recommended review status.
-* Scoring inputs are limited to incident category, description, metadata, location approximation, and reviewer-safe evidence fields.
-* The system displays AI output as a recommendation, not a final decision.
-* Sensitive flags force or preserve human review before public publishing.
-* AI recommendation generation is auditable when it materially affects status, alerting, or public display decisions.
+* “My reports” data is filtered by authenticated user on the server.
+* A citizen cannot access another citizen's report by changing an identifier.
+* Report lists are bounded and deterministically ordered.
+* Mobile supports loading, empty, success, error, retry, and unauthorized states.
+* Incident details show only fields allowed for the owner view.
 
-**Priority:** P0
+**QA focus:** Ownership enforcement, direct-ID attack, empty/error states, navigation.
 
-**Dependencies:** AI verification rules, backend incident workflow, department taxonomy, audit logging.
+### US-04 — Controlled verification status workflow
 
-**Privacy and safety notes:** Do not send private identity, exact location, or sensitive media metadata to future external AI services without a separate privacy review.
-
-**QA focus:** Deterministic scoring examples, sensitive flag behavior, reviewer override behavior, and audit coverage.
-
-### US-05: Geo-Fenced Safety Alerts
-
-**Backlog link:** BL-05
-
-**Feature name:** Geo-fenced safety alerts
-
-**User story:** As a nearby citizen, I want to receive relevant safety alerts so I can avoid immediate hazards in my area.
+**Backlog link:** BL-04  
+**User story:** As a reviewer, I want controlled incident states so unreviewed or sensitive information cannot become trusted public information automatically.
 
 **Acceptance criteria:**
 
-* Only verified critical incidents can trigger public safety alerts.
-* Alert radius is based on incident type and severity, with reviewer override support.
-* Alerts describe the hazard, approximate area, and recommended safety action.
-* Alerts do not reveal reporter identity or exact reporter location.
-* Alert creation and reviewer override actions create audit log entries.
+* Supported states and transitions are consistent across DB, backend, mobile, docs, and QA.
+* Invalid transitions return `409` and do not modify state.
+* Reviewer actions require the correct role and a reason where required.
+* Previous state, new state, actor, timestamp, and reason are audited.
+* Sensitive incidents cannot be automatically published.
 
-**Priority:** P0
+**QA focus:** Every valid transition, invalid transition, missing reason, role denial, audit persistence.
 
-**Dependencies:** Verification workflow, location metadata, notification planning, AI radius suggestion rules.
+### US-05 — Explainable deterministic verification scoring
 
-**Privacy and safety notes:** Keep alert language practical and non-alarming. Avoid naming private individuals or disclosing sensitive evidence.
-
-**QA focus:** Alert eligibility, radius calculation/override, approximate-area presentation, duplicate alert handling, and audit entries.
-
-### US-06: Privacy Protection for Public Views
-
-**Backlog link:** BL-06
-
-**Feature name:** Privacy protection
-
-**User story:** As a citizen reporter, I want my identity and exact location protected so I can report safety issues without unnecessary personal risk.
+**Backlog link:** BL-05  
+**User story:** As a reviewer, I want explainable rule-based recommendations so I can prioritise incidents without giving AI final authority.
 
 **Acceptance criteria:**
 
-* Public views hide reporter name, contact details, exact coordinates, and private media metadata.
-* Public records show only an approximate area suitable for civic awareness.
-* Sensitive reports require human review before publishing.
-* Exact location sharing requires explicit user consent for helper workflows.
-* Privacy-related actions and exceptions are auditable.
+* Scoring returns severity, confidence, sensitivity, department, alert radius, recommended status, and rationale.
+* The same input produces the same MVP output.
+* Sensitive triggers require human review.
+* Automated output never finalises `verified`, `published`, or `resolved`.
+* Reviewer overrides require a reason and audit event.
 
-**Priority:** P0
+**Privacy and safety:** Private identity, exact location, and unnecessary media metadata must not be sent to an external model.
 
-**Dependencies:** Security/privacy requirements, backend authorization, public board design, helper request consent flow.
+**QA focus:** Flood, electric hazard, road hazard, vague report, duplicate reports, sensitive allegation, reviewer override.
 
-**Privacy and safety notes:** Privacy constraints apply across mobile, web, backend, database, AI verification, and QA tasks.
+### US-06 — Complete sensitive-action audit trail
 
-**QA focus:** Public DTO redaction, authorization checks, sensitive-case publishing gates, consent enforcement, and audit visibility.
-
-### US-07: Sensitive Action Audit Trail
-
-**Backlog link:** BL-07
-
-**Feature name:** Audit logs
-
-**User story:** As an administrator, I want sensitive actions recorded in an audit trail so platform decisions can be reviewed and accountability records are not silently changed.
+**Backlog link:** BL-06  
+**User story:** As an administrator, I want sensitive actions recorded so decisions can be reviewed and accountability history cannot be silently rewritten.
 
 **Acceptance criteria:**
 
-* Audit logs capture actor, action, target entity, timestamp, previous value, new value, and reason when applicable.
-* Incident creation, verification changes, alert creation, reviewer overrides, public board visibility changes, helper consent, and exact-location access are auditable.
-* Audit records are available only to authorized reviewer or administrator workflows.
-* Audit records are append-oriented and are not silently deleted.
-* Audit log failures are treated as blocking for sensitive state changes where practical in the MVP.
+* Audit entries identify the authenticated actor, action, target, time, reason, and safe change metadata.
+* Required events include incident creation, verification decisions, alert changes, publication/moderation, consent grant/revoke/access, privileged evidence access, and role changes.
+* Audit metadata excludes secrets, passwords, tokens, raw evidence, and unnecessary exact coordinates.
+* Audit access is restricted to authorised roles.
+* Sensitive state changes fail safely if their mandatory audit record cannot be stored.
 
-**Priority:** P0
+**QA focus:** Required-event coverage, authorization, safe metadata, failure behaviour.
 
-**Dependencies:** Database audit model, backend audit service, authorization rules, sensitive workflow definitions.
+### US-07 — Privacy-safe geo-fenced alerts
 
-**Privacy and safety notes:** Audit logs may contain sensitive operational metadata and must not be exposed publicly.
+**Backlog link:** BL-07  
+**User story:** As a nearby citizen, I want relevant safety alerts without exposing the reporter or exact incident location.
 
-**QA focus:** Audit creation for each sensitive event, authorization boundaries, immutable/update restrictions, and failure behavior.
+**Acceptance criteria:**
+
+* Only active, non-expired, reviewer-approved alerts are public.
+* Eligibility is connected to verification state.
+* Radius values are validated; overrides require a reason and audit event.
+* Responses contain an approximate risk area and safe action but no reporter identity, private evidence, or exact incident coordinates.
+* Missing, invalid, inside-radius, outside-radius, expired, and cancelled cases are handled predictably.
+
+**QA focus:** Eligibility, distance matching, expiry, cancellation, no-location response, redaction.
+
+### US-08 — Explicit public, owner, reviewer, and admin DTO boundaries
+
+**Backlog link:** BL-08  
+**User story:** As a privacy-conscious user, I want the server to return only the information permitted for my role and relationship to a record.
+
+**Acceptance criteria:**
+
+* Separate response contracts exist for public, citizen-owner, reviewer, and admin use cases.
+* EF/domain entities are not serialized directly from controllers.
+* Public response tests assert that restricted fields are absent.
+* Unauthorized access does not reveal whether another user's private record exists.
+* Exact location is available only through an explicitly consented and authorised workflow.
+
+**QA focus:** Field-level redaction, role matrix, ownership, resource enumeration resistance.
+
+### US-09 — Automated merge quality gate
+
+**Backlog link:** BL-09  
+**User story:** As an engineering manager, I want every pull request automatically validated so broken or unsafe changes do not merge silently.
+
+**Acceptance criteria:**
+
+* Pull requests run Flutter analysis/tests and .NET restore/build/tests.
+* A failed required command fails the workflow.
+* Workflow configuration contains no committed credentials.
+* README build/test commands match CI commands.
+* Mandatory tests include at least one authorization test and one public-redaction test before pilot.
+
+**QA focus:** Green build, intentional failure, secret handling, required-check enforcement.
 
 ## P1 Stories
 
-### US-08: Public Accountability Board
+### US-10 — Public accountability board
 
-**Backlog link:** BL-08
-
-**Feature name:** Public accountability board
-
-**User story:** As a nearby citizen, I want to track verified civic issues so I can see public status, responsible department guidance, and progress updates.
+**Backlog link:** BL-10  
+**User story:** As a nearby citizen, I want to view verified civic issues and progress without seeing private reporter data.
 
 **Acceptance criteria:**
 
-* The board lists only verified or published incidents.
-* Each board item shows incident type, approximate area, status, severity, department guidance, and latest public update.
-* Reporter identity and exact location are never shown publicly.
-* Updates to board visibility, status, and resolution are auditable.
-* Records are not silently removed; removal from public display requires a documented moderation or safety reason.
+* Only reviewer-approved privacy-safe records are public.
+* Items show category, approximate area, severity, department guidance, status, and public history.
+* Visibility changes and moderation actions are audited.
+* Records are corrected, hidden, resolved, or archived through explicit states rather than silent deletion.
 
-**Priority:** P1
+**QA focus:** Publication gate, redaction, history, moderation reason, archive behaviour.
 
-**Dependencies:** Verification workflow, public view model, backend listing endpoint, audit logs.
+### US-11 — Public issue progress updates
 
-**Privacy and safety notes:** Board content should support accountability without turning unverified allegations into public claims.
-
-**QA focus:** Public filtering, privacy redaction, status/update display, moderation reason capture, and non-deletion behavior.
-
-### US-09: Public Issue Updates
-
-**Backlog link:** BL-09
-
-**Feature name:** Public issue updates
-
-**User story:** As a reviewer/operator, I want to add public progress updates to verified issues so the community can understand what changed without losing history.
+**Backlog link:** BL-11  
+**User story:** As a reviewer, I want to publish safe progress updates while preserving previous public history.
 
 **Acceptance criteria:**
 
-* A verified or published board item can receive a public update with status text, timestamp, and reviewer attribution suitable for public display.
-* Updates do not expose reporter identity, exact location, private notes, or sensitive evidence.
-* Updating a record creates an audit entry with previous and new public status details.
-* Removing an update from public display requires a moderation or safety reason.
-* Authorized users can still review historical updates and moderation reasons.
+* Updates require an authorised reviewer and an eligible public issue.
+* Public text excludes private notes, exact location, identity, and unreviewed allegations.
+* Previous and new public values are audited.
+* Removal from public display requires a moderation or safety reason.
 
-**Priority:** P1
+**QA focus:** Update creation, unsafe-field rejection, history, moderation.
 
-**Dependencies:** Public accountability board, audit logs, reviewer workflow, public/private field separation.
+### US-12 — Practical solution suggestions
 
-**Privacy and safety notes:** Public update text must not publish unverified allegations or private user details.
-
-**QA focus:** Update creation, public/private field separation, moderation flow, audit trail, and history review.
-
-### US-10: Solution Suggestions
-
-**Backlog link:** BL-10
-
-**Feature name:** Solution hub
-
-**User story:** As a nearby citizen, I want practical next-step suggestions so I can understand safe civic actions for a verified issue.
+**Backlog link:** BL-12  
+**User story:** As a citizen, I want safe next-step guidance for a verified issue.
 
 **Acceptance criteria:**
 
-* Suggestions can include safety precautions, responsible department category, and recommended non-legal escalation path.
-* Suggestions are tied to incident type, severity, and verification status.
-* Suggestions avoid legal advice, accusations, or guaranteed outcomes.
-* Sensitive suggestions are reviewed before public publishing.
-* Suggestion creation or reviewer edits are auditable.
+* Suggestions are tied to verified category and severity.
+* Guidance includes safety precautions and department routing.
+* Guidance avoids legal advice, accusations, guarantees, and dangerous instructions.
+* Sensitive suggestions require reviewer approval.
+* Creation and reviewer edits are audited.
 
-**Priority:** P1
+**QA focus:** Rule mapping, wording guardrails, sensitivity gate, audit.
 
-**Dependencies:** AI rules, backend suggestion model, reviewer workflow, public board.
+### US-13 — Consent-scoped verified helper requests
 
-**Privacy and safety notes:** In MVP, suggestions can be rule-based. Do not integrate production AI models for this story.
-
-**QA focus:** Rule mapping, sensitive suggestion gating, public wording review, and audit entries.
-
-### US-11: Verified Helper Requests
-
-**Backlog link:** BL-11
-
-**Feature name:** Verified helper requests
-
-**User story:** As a helper requester, I want to request assistance while showing only an approximate area until I consent to share exact location.
+**Backlog link:** BL-13  
+**User story:** As a helper requester, I want assistance while exposing only an approximate area until I explicitly consent to more information sharing.
 
 **Acceptance criteria:**
 
-* Helper requests show approximate location first.
-* Exact location sharing requires explicit requester consent.
-* Helper request visibility depends on verification or reviewer approval.
-* Helper actions involving consent, visibility, or exact location are auditable.
-* The product flow includes safety copy that discourages unsafe in-person contact and emergency misuse.
+* Helper-visible requests begin with approximate area and minimum necessary details.
+* Exact location access is requester-consented, recipient-specific, purpose-specific, time-scoped, revocable, and audited.
+* Helper/request visibility requires verification or reviewer approval.
+* A requester can revoke access and the recipient loses future access.
+* Request state changes and exact-location views are audited.
 
-**Priority:** P1
+**QA focus:** Consent grant, recipient mismatch, expiry, revoke, visibility gate, audit.
 
-**Dependencies:** Mobile consent flow, backend helper request workflow, security/privacy review, audit logs.
+### US-14 — Helper safety and misuse prevention
 
-**Privacy and safety notes:** This workflow is sensitive. Do not expose vulnerable users, exact location, or identity publicly.
-
-**QA focus:** Consent flow, approximate-first display, exact-location access controls, helper visibility approval, and audit coverage.
-
-### US-12: Helper Safety and Emergency Misuse Copy
-
-**Backlog link:** BL-12
-
-**Feature name:** Helper safety guidance
-
-**User story:** As a helper requester, I want clear safety guidance so I understand when to use emergency services and how to avoid unsafe interactions.
+**Backlog link:** BL-14  
+**User story:** As a requester or helper, I want clear safety guidance and reporting controls so the platform does not encourage unsafe contact or replace emergency services.
 
 **Acceptance criteria:**
 
-* Helper request screens include copy stating the app is not a replacement for emergency dispatch.
-* The flow discourages unsafe in-person contact with strangers.
-* The flow explains approximate location first and consent-based exact location sharing.
-* Safety guidance is visible before a request becomes public or helper-visible.
-* Safety copy changes are reviewed as part of security/privacy QA.
+* Emergency disclaimer and approximate-location explanation appear before helper visibility.
+* The flow discourages unsafe direct contact and oversharing.
+* Users can report abuse or unsafe behaviour.
+* Safety-copy changes require Product, Security, and QA review.
 
-**Priority:** P1
+**QA focus:** Copy visibility, emergency disclaimer, abuse reporting, regression review.
 
-**Dependencies:** Helper request UX, privacy guidance, QA test plan.
+### US-15 — Restricted evidence and media handling
 
-**Privacy and safety notes:** Safety content should protect vulnerable users and reduce misuse of helper workflows.
-
-**QA focus:** Copy visibility, consent explanation, emergency disclaimer, and safety regression checks.
-
-## P2 Stories
-
-### US-13: Petition and Legal-Aid Planning
-
-**Backlog link:** BL-13
-
-**Feature name:** Petition/legal-aid planning
-
-**User story:** As a citizen reporter with an unresolved civic issue, I may need escalation guidance, but I need the product to avoid automated legal claims or unsafe public accusations.
+**Backlog link:** BL-15  
+**User story:** As a reporter, I want evidence protected until it is authorised and redacted for a specific use.
 
 **Acceptance criteria:**
 
-* MVP documentation identifies petition and legal-aid workflows as future scope.
-* No automated petition filing, legal advice, or legal-aid matching is included in the MVP.
-* Future escalation workflows require human review and security/privacy review.
-* Any future sensitive public publishing must include audit logs and documented reviewer decisions.
+* Upload validation restricts allowed type, size, and metadata.
+* Raw storage references are never public.
+* EXIF/location metadata is removed from public derivatives.
+* Privileged evidence access and redaction/publication actions are audited.
+* Faces, plates, minors, vulnerable people, and private-property details require review before public use.
 
-**Priority:** P2
+**QA focus:** Type/size validation, unauthorised access, metadata stripping, redaction state, audit.
 
-**Dependencies:** Product planning, legal/privacy review, public accountability governance.
+### US-16 — Backup and restore validation
 
-**Privacy and safety notes:** Keep this as planning only until a dedicated legal/privacy task is approved.
-
-**QA focus:** Scope checks that prevent accidental MVP implementation of legal advice, legal matching, or automated petition filing.
-
-### US-14: External Authority and Dispatch Integration Planning
-
-**Backlog link:** BL-14
-
-**Feature name:** External integration planning
-
-**User story:** As an administrator, I want future external authority or dispatch integrations documented separately so MVP work does not overpromise real-time emergency response.
+**Backlog link:** BL-16  
+**User story:** As an operator, I want tested backups so data can be restored without exposing sensitive records or relying on an unverified procedure.
 
 **Acceptance criteria:**
 
-* MVP documentation states real-time dispatch, authority ticketing, payment, and production third-party alert integrations are out of scope.
-* Future external data sharing requires data minimization, consent analysis, and security/privacy review.
-* Any future integration must define audit requirements before implementation.
-* MVP user-facing copy must not imply guaranteed emergency or government response.
+* A non-production backup is created and restored into a separate environment.
+* Restore verification confirms schema and representative record integrity.
+* Backup files remain outside source control and use restricted access.
+* Production planning documents encryption, retention, operator authorization, and audit requirements.
 
-**Priority:** P2
+**QA focus:** Restore drill, checksum/integrity, access restriction, repository exclusion.
 
-**Dependencies:** Product scope, architecture planning, security/privacy review.
+## P2 Deferred Stories
 
-**Privacy and safety notes:** External integrations can expose sensitive location or identity data and require separate governance.
+### US-17 — Petition and legal-aid automation planning
 
-**QA focus:** Scope guardrails, user-facing copy review, and prevention of unapproved external sharing.
+**Backlog link:** BL-17  
+No implementation is authorised in the current MVP. A future initiative requires dedicated legal, governance, security, privacy, human-review, and audit design.
 
-## Story Traceability Matrix
+### US-18 — Authority and real-time dispatch integrations
 
-| Story | Backlog item | Primary module(s) | Must-have audit coverage | Public privacy requirement |
-| --- | --- | --- | --- | --- |
-| US-01 | BL-01 | Mobile, Backend, DB | Incident creation | Approximate location and anonymous reporter display |
-| US-02 | BL-02 | Product, Backend, DB | Category changes if admin-managed | Labels avoid accusations or private identity |
-| US-03 | BL-03 | Backend, DB, AI | Status transitions and reviewer notes | Sensitive reports require human review before publishing |
-| US-04 | BL-04 | AI, Backend | AI recommendations affecting workflow decisions | No unnecessary identity or exact-location data in AI context |
-| US-05 | BL-05 | Backend, Mobile, AI | Alert creation and radius override | Alert uses approximate area only |
-| US-06 | BL-06 | Security, Backend, Mobile | Privacy exceptions and consent events | Public DTOs redact identity, exact location, and private metadata |
-| US-07 | BL-07 | Backend, DB | All sensitive actions | Audit logs are authorized-only, not public |
-| US-08 | BL-08 | Web/Mobile, Backend | Board visibility, status, and resolution changes | Board lists verified/published records only |
-| US-09 | BL-09 | Web/Mobile, Backend | Public update and moderation changes | Public updates exclude private notes and evidence |
-| US-10 | BL-10 | AI, Backend | Suggestion creation and edits | Suggestions avoid legal advice and accusations |
-| US-11 | BL-11 | Mobile, Backend, Security | Consent, visibility, exact-location access | Approximate location first; exact location by consent only |
-| US-12 | BL-12 | Product, Mobile, QA | Safety copy approval if tracked | Copy explains privacy and emergency limitations |
-| US-13 | BL-13 | Product, Security | Future workflow decisions | No MVP legal automation or sensitive publishing without review |
-| US-14 | BL-14 | Product, Architecture, Security | Future external sharing decisions | No unapproved external sharing of identity or exact location |
+**Backlog link:** BL-18  
+No real-time dispatch, authority ticketing, payment, or unsupported third-party commitment is authorised in the current MVP.
 
-## Cross-Story Product Guardrails
+### US-19 — External model-backed AI
 
-* Public pages must use approximate location and anonymous reporter presentation by default.
-* Sensitive workflows require human review before public publishing.
-* AI verification is decision support only and must never be the sole final authority for sensitive outcomes.
-* Every sensitive action must leave an audit trail.
-* MVP work should remain modular so future agents can implement mobile, backend, database, QA, AI, and security tasks independently.
+**Backlog link:** BL-19  
+External AI remains deferred until deterministic scoring, evaluation, redaction, human review, auditability, and vendor/privacy controls are proven.
+
+## Story Readiness Checklist
+
+A story may become a GitHub implementation issue only when:
+
+1. Its dependencies are complete or represented by an approved interface/mock.
+2. Allowed folders and explicit exclusions are stated.
+3. Public, owner, reviewer, and admin visibility is clear.
+4. Required audit events are named.
+5. QA cases cover happy path, negative path, authorization, privacy, misuse, and failure behaviour.
+6. The issue is small enough for one reviewable pull request.
