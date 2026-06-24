@@ -34,4 +34,6 @@ dotnet build
 dotnet run
 ```
 
+_No test project exists yet; when a test project is introduced, run `dotnet test` to execute the suite._
+
 Open Swagger at `/swagger` in the Development environment.
