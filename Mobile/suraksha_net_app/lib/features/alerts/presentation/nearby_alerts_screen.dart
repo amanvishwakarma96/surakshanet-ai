@@ -167,7 +167,16 @@ class _AlertMeta extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Text('$label: $value'),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
     );
   }
 }
