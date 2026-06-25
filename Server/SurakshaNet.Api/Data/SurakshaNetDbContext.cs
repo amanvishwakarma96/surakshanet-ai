@@ -65,10 +65,11 @@ public sealed class SurakshaNetDbContext(DbContextOptions<SurakshaNetDbContext> 
                 .WithMany()
                 .HasForeignKey(alert => alert.IncidentId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(alert => alert.PublishedBy)
-                .WithMany()
-                .HasForeignKey(alert => alert.PublishedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(alert => alert.PublishedByUser)
+    .WithMany()
+    .HasForeignKey(alert => alert.PublishedByUserId)
+    .OnDelete(DeleteBehavior.Restrict);
+                
         });
 
         modelBuilder.Entity<PublicBoardRecord>(entity =>

@@ -13,7 +13,8 @@ class ProfileScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const CircleAvatar(radius: 36, child: Icon(Icons.person_rounded, size: 40)),
+            const CircleAvatar(
+                radius: 36, child: Icon(Icons.person_rounded, size: 40)),
             const SizedBox(height: 16),
             Text(
               'Mock Citizen',
@@ -24,18 +25,20 @@ class ProfileScreen extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text('MVP user profile placeholder', textAlign: TextAlign.center),
+            const Text('MVP user profile placeholder',
+                textAlign: TextAlign.center),
             const SizedBox(height: 24),
             const PrivacyNoticeCard(
-              message: 'Exact location sharing remains consent-based and should be enabled only for verified help flows.',
+              message:
+                  'Exact location sharing remains consent-based and should be enabled only for verified help flows.',
             ),
             const SizedBox(height: 12),
-            Card(
+            const Card(
               child: SwitchListTile.adaptive(
                 value: false,
                 onChanged: null,
-                title: const Text('Exact location sharing'),
-                subtitle: const Text('Disabled in foundation build.'),
+                title: Text('Exact location sharing'),
+                subtitle: Text('Disabled in foundation build.'),
               ),
             ),
           ],

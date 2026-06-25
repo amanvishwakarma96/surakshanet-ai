@@ -6,12 +6,41 @@ import 'package:suraksha_net_app/features/incidents/data/mock_incident_repositor
 void main() {
   setUp(MockIncidentRepository.resetForTesting);
 
+  Future<void> enterMockApp(WidgetTester tester) async {
+    await tester.tap(find.text('Get started'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter mock app'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openReportIncident(WidgetTester tester) async {
+    await enterMockApp(tester);
+    await tester.tap(find.text('Report incident'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> scrollReportUntilVisible(
+    WidgetTester tester,
+    Finder target, {
+    Offset dragOffset = const Offset(0, -300),
+  }) async {
+    await tester.dragUntilVisible(
+      target,
+      find.byType(ListView),
+      dragOffset,
+    );
+    await tester.pump();
+    await tester.drag(find.byType(ListView), dragOffset / 2);
+    await tester.pump();
+  }
+
   testWidgets('shows splash screen title and privacy message', (tester) async {
     await tester.pumpWidget(const SurakshaNetApp());
 
     expect(find.text('SurakshaNet AI'), findsOneWidget);
     expect(
-      find.text('Verification-first civic safety alerts with privacy by default.'),
+      find.text(
+          'Verification-first civic safety alerts with privacy by default.'),
       findsOneWidget,
     );
   });
@@ -21,10 +50,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const SurakshaNetApp());
 
-      await tester.tap(find.text('Get started'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Enter mock app'));
-      await tester.pumpAndSettle();
+      await enterMockApp(tester);
 
       expect(find.text('Civic safety dashboard'), findsOneWidget);
 
@@ -33,6 +59,8 @@ void main() {
 
       expect(find.text('One-tap safety report'), findsOneWidget);
       expect(find.text('Flood / waterlogging'), findsOneWidget);
+
+      await scrollReportUntilVisible(tester, find.text('Save mock report'));
       expect(find.text('Save mock report'), findsOneWidget);
     },
   );
@@ -42,31 +70,45 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const SurakshaNetApp());
 
-      await tester.tap(find.text('Get started'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Enter mock app'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Report incident'));
-      await tester.pumpAndSettle();
+      await openReportIncident(tester);
 
       await tester.tap(find.text('Pothole / road damage'));
+
+      final areaField = find.widgetWithText(
+        TextFormField,
+        'Approximate area',
+      );
+      await scrollReportUntilVisible(tester, areaField);
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Approximate area'),
+        areaField,
         'Near Central Park north gate',
       );
+
+      final descriptionField = find.widgetWithText(
+        TextFormField,
+        'What happened?',
+      );
+      await scrollReportUntilVisible(tester, descriptionField);
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'What happened?'),
+        descriptionField,
         'Large pothole blocking the left lane after rain.',
       );
-      await tester.ensureVisible(find.text('Save mock report'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Save mock report'));
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+
+      final saveButton =
+          find.widgetWithText(ElevatedButton, 'Save mock report');
+      await scrollReportUntilVisible(tester, saveButton);
+      await tester.tap(saveButton);
       await tester.pumpAndSettle();
 
       expect(find.text('Verification status'), findsOneWidget);
-      expect(find.textContaining('INC-MOCK-1003'), findsOneWidget);
-      expect(find.textContaining('Pothole / road damage'), findsOneWidget);
-      expect(find.textContaining('Near Central Park north gate'), findsOneWidget);
+      expect(
+        find.text('INC-MOCK-1003 • Pothole / road damage'),
+        findsOneWidget,
+      );
+      expect(
+          find.textContaining('Near Central Park north gate'), findsOneWidget);
       expect(
         find.textContaining('Submitted for AI-assisted review'),
         findsOneWidget,
@@ -79,26 +121,36 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const SurakshaNetApp());
 
-      await tester.tap(find.text('Get started'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Enter mock app'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Report incident'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Save mock report'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Save mock report'));
+      await openReportIncident(tester);
+
+      final saveButton =
+          find.widgetWithText(ElevatedButton, 'Save mock report');
+      await scrollReportUntilVisible(tester, saveButton);
+      await tester.tap(saveButton);
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Enter an approximate area with at least 6 characters.'),
-        findsOneWidget,
+      final areaError = find.text(
+        'Enter an approximate area with at least 6 characters.',
+      );
+      await scrollReportUntilVisible(
+        tester,
+        areaError,
+        dragOffset: const Offset(0, 300),
       );
       expect(
-        find.text('Describe the incident in at least 12 characters.'),
+        areaError,
         findsOneWidget,
       );
-      expect(find.text('One-tap safety report'), findsOneWidget);
+
+      final descriptionError = find.text(
+        'Describe the incident in at least 12 characters.',
+      );
+      await scrollReportUntilVisible(tester, descriptionError);
+      expect(
+        descriptionError,
+        findsOneWidget,
+      );
+      expect(find.text('Report incident'), findsOneWidget);
     },
   );
 
@@ -107,10 +159,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const SurakshaNetApp());
 
-      await tester.tap(find.text('Get started'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Enter mock app'));
-      await tester.pumpAndSettle();
+      await enterMockApp(tester);
 
       await tester.tap(find.text('Nearby alerts'));
       await tester.pumpAndSettle();
@@ -134,10 +183,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const SurakshaNetApp());
 
-      await tester.tap(find.text('Get started'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Enter mock app'));
-      await tester.pumpAndSettle();
+      await enterMockApp(tester);
       await tester.tap(find.text('Nearby alerts'));
       await tester.pumpAndSettle();
 
@@ -154,5 +200,4 @@ void main() {
       expect(find.text('Published after human verification'), findsWidgets);
     },
   );
-
 }
